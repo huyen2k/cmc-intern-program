@@ -93,7 +93,7 @@ func detectTechnologies(resp *http.Response, body string) []map[string]any {
 	if strings.Contains(server, "apache") {
 		add("Apache", "Web Server", "", 100)
 	}
-	if strings.Contains(server, "cloudflare") || strings.Contains(strings.ToLower(resp.Header.Get("CF-Ray")), "") && resp.Header.Get("CF-Ray") != "" {
+	if strings.Contains(server, "cloudflare") || resp.Header.Get("CF-Ray") != "" {
 		add("Cloudflare", "CDN", "", 100)
 	}
 	if strings.Contains(xpb, "express") {

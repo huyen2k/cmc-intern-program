@@ -61,12 +61,12 @@ func (s *AssetService) BatchCreate(assets []domain.Asset) ([]string, error) {
 		return nil, errors.New("max 100 assets per request")
 	}
 
-	for _, a := range assets {
-		if a.Status == "" {
-			a.Status = "active"
+	for i := range assets {
+		if assets[i].Status == "" {
+			assets[i].Status = "active"
 		}
 
-		if err := a.Validate(); err != nil {
+		if err := assets[i].Validate(); err != nil {
 			return nil, err
 		}
 	}

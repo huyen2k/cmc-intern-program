@@ -83,7 +83,7 @@ func (s *ScanService) runScan(job *domain.ScanJob, asset *domain.Asset) {
 	}
 
 	ended := time.Now().UTC()
-	if err != nil {
+	if err != nil && (job.ScanType != domain.ScanTypeAll || len(results) == 0) {
 		_ = s.scanRepo.SetJobStatus(job.ID, domain.ScanStatusFailed, err.Error(), 0, &ended)
 		log.Printf("scan job %s failed: %v", job.ID, err)
 		return

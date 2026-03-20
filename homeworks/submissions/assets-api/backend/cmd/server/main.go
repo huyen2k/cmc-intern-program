@@ -20,6 +20,7 @@ func isAPIPath(path string) bool {
 
 func spaStaticHandler(frontendDir string) http.HandlerFunc {
 	indexFile := filepath.Join(frontendDir, "index.html")
+	absFrontendDir, _ := filepath.Abs(frontendDir)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if isAPIPath(r.URL.Path) {
@@ -33,9 +34,21 @@ func spaStaticHandler(frontendDir string) http.HandlerFunc {
 		}
 
 		requestedFile := filepath.Join(frontendDir, cleanPath)
+		absRequestedFile, err := filepath.Abs(requestedFile)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		rel, err := filepath.Rel(absFrontendDir, absRequestedFile)
+		if err != nil || strings.HasPrefix(rel, "..") {
+			http.NotFound(w, r)
+			return
+		}
+
 		if cleanPath != "" {
-			if info, err := os.Stat(requestedFile); err == nil && !info.IsDir() {
-				http.ServeFile(w, r, requestedFile)
+			if info, err := os.Stat(absRequestedFile); err == nil && !info.IsDir() {
+				http.ServeFile(w, r, absRequestedFile)
 				return
 			}
 		}

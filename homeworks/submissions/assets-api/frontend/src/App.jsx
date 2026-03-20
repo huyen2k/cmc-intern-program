@@ -9,7 +9,24 @@ async function api(path, options = {}) {
   });
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  const contentType = response.headers.get('content-type') || '';
+  let data = null;
+
+  if (text) {
+    if (contentType.includes('application/json')) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
+      }
+    } else {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
+      }
+    }
+  }
 
   if (!response.ok) {
     throw new Error((data && data.error) || text || `HTTP ${response.status}`);
