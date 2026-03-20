@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"assets-api/internal/config"
@@ -11,6 +13,41 @@ import (
 	"assets-api/internal/repository"
 	"assets-api/internal/service"
 )
+
+func isAPIPath(path string) bool {
+	return strings.HasPrefix(path, "/assets") || strings.HasPrefix(path, "/scan-jobs") || path == "/health"
+}
+
+func spaStaticHandler(frontendDir string) http.HandlerFunc {
+	indexFile := filepath.Join(frontendDir, "index.html")
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if isAPIPath(r.URL.Path) {
+			http.NotFound(w, r)
+			return
+		}
+
+		cleanPath := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+		if cleanPath == "." {
+			cleanPath = ""
+		}
+
+		requestedFile := filepath.Join(frontendDir, cleanPath)
+		if cleanPath != "" {
+			if info, err := os.Stat(requestedFile); err == nil && !info.IsDir() {
+				http.ServeFile(w, r, requestedFile)
+				return
+			}
+		}
+
+		if _, err := os.Stat(indexFile); err != nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		http.ServeFile(w, r, indexFile)
+	}
+}
 
 func main() {
 
@@ -148,6 +185,12 @@ func main() {
 
 	// gọi đúng HealthHandler
 	mux.HandleFunc("/health", handler.HealthHandler(db))
+
+	frontendDir := os.Getenv("FRONTEND_DIR")
+	if frontendDir == "" {
+		frontendDir = "./web"
+	}
+	mux.HandleFunc("/", spaStaticHandler(frontendDir))
 
 	log.Println("Server running on :" + cfg.PORT)
 

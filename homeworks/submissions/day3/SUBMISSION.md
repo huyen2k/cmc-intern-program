@@ -8,7 +8,7 @@
 - [x] Bài 2: Viết Unit Tests
 - [x] Bài 3: Tích hợp Frontend
 - [x] Bài 4: CI/CD với GitHub Actions
-- [x] Bài 5: Deploy với Docker Compose
+- [ ] Bài 5: Deploy với Docker Compose (Triển khai trên Azure failed do lỗi cấu hình, đang tiếp tục fix)
 - [ ] Bài 6: Tính năng EASM mới (Bonus)
 - [ ] Bài 7: Deploy lên Cloud VM (Bonus)
 - [ ] Bài 8: Domain & TLS/HTTPS (Bonus)
@@ -26,11 +26,15 @@
 
 ## Bằng chứng kiểm thử
 
-- API scan: đính kèm screenshot hoặc command output cho các endpoint scan.
+### API scan:
+
+![alt text](image-2.png)
+
+![alt text](image-3.png)
 
 ### Unit tests:
 
-`go test -cover ./tests/...`.
+`go test -cover ./...`.
 
 ![alt text](image.png)
 

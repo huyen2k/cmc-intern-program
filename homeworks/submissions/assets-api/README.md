@@ -1,9 +1,7 @@
 ﻿# EASM Asset Management Platform
 
-This repository contains a full-stack Day 3 submission:
-
-- Backend API (Go): `backend/`
-- Frontend Dashboard (React + Vite): `frontend/`
+This is a full-stack Day 3 submission with a Go backend and React frontend.
+This is the only README file in the project and includes all run instructions.
 
 ## Project Structure
 
@@ -14,11 +12,12 @@ assets-api/
 |   |-- internal/
 |   |-- migrations/
 |   |-- go.mod
-|   `-- README.md
+|   `-- Dockerfile
 |-- frontend/
 |   |-- src/
 |   |-- package.json
-|   `-- README.md
+|   `-- Dockerfile
+|-- Dockerfile
 `-- docker-compose.yml
 ```
 
@@ -31,23 +30,59 @@ assets-api/
 - Task 5: Docker Compose Deployment - Done
 - Task 6-9 (Bonus): Not implemented yet
 
+## Run Project
+
+### Option 1: Docker Compose (recommended)
+
+Run from the assets-api folder:
+
+```bash
+docker-compose up --build
+```
+
+Access:
+
+- App (frontend + API in one image): http://localhost:8080
+- Health endpoint: http://localhost:8080/health
+
+### Option 2: Local backend only
+
+```bash
+cd backend
+cp .env.example .env
+go mod tidy
+go run ./cmd/server
+```
+
+Backend runs on http://localhost:8080
+
+### Option 3: Local frontend only
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on http://localhost:5173
+
 ## Run Tests
 
-Run all backend tests:
+### Run all backend tests
 
 ```bash
 cd backend
 go test ./...
 ```
 
-Run with coverage:
+### Run tests with coverage
 
 ```bash
 cd backend
 go test -cover ./...
 ```
 
-Run specific package tests:
+### Run specific package tests
 
 ```bash
 cd backend
@@ -57,14 +92,14 @@ go test -v ./internal/service
 go test -v ./internal/scanner
 ```
 
-Run one specific test by name:
+### Run one test by name
 
 ```bash
 cd backend
 go test -v ./internal/service -run TestAssetService_Create
 ```
 
-Generate coverage report file:
+### Generate HTML coverage report
 
 ```bash
 cd backend
@@ -73,18 +108,8 @@ go tool cover -func=coverage.out
 go tool cover -html=coverage.out -o coverage.html
 ```
 
-## Quick Start
+## Docker Hub Image
 
-Docker (recommended):
+Single-image deployment tag:
 
-```bash
-docker-compose up --build
-```
-
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8080
-
-## Documentation
-
-- Backend details: `backend/README.md`
-- Frontend details: `frontend/README.md`
+- huyennguyen08032005/assets-api:latest
