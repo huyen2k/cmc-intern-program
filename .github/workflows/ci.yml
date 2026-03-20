@@ -1,0 +1,96 @@
+name: Homework CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "homeworks/submissions/assets-api/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches:
+      - homework
+    paths:
+      - "homeworks/submissions/assets-api/**"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  # Backend Build and Test
+  backend:
+    name: Backend - Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: homeworks/submissions/assets-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: homeworks/submissions/assets-api/go.sum
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build backend
+        run: go build -v ./...
+
+      - name: Run tests
+        run: go test -v ./...
+
+  # Security Scan - Gosec
+  security-scan:
+    name: Security Scan - Gosec
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: homeworks/submissions/assets-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: homeworks/submissions/assets-api/go.sum
+
+      - name: Install Gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run Gosec security scan
+        run: gosec ./...
+        continue-on-error: true
+
+  # Summary Report
+  report:
+    name: Build Report
+    runs-on: ubuntu-latest
+    permissions: {}
+    needs: [backend, security-scan]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Homework CI - Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Build & Test: ${{ needs.backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan (Gosec): ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.backend.result }}" == "success" ]]; then
+            echo "✅ All required checks passed! Ready to merge." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some checks failed. Please review the logs." >> $GITHUB_STEP_SUMMARY
+          fi
