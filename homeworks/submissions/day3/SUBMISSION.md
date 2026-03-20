@@ -40,4 +40,6 @@
 
 ![alt text](image-1.png)
 
-- CI: đính kèm screenshot jobs xanh ở tab Actions.
+### CI:
+
+![alt text](image-4.png)
