@@ -16,6 +16,52 @@ func NewAssetRepository(db *sql.DB) *AssetRepository {
 	return &AssetRepository{db}
 }
 
+func (r *AssetRepository) Create(asset domain.Asset) (*domain.Asset, error) {
+	if asset.ID == "" {
+		asset.ID = uuid.New().String()
+	}
+
+	err := r.db.QueryRow(
+		"INSERT INTO assets(id,name,type,status) VALUES($1,$2,$3,$4) RETURNING created_at",
+		asset.ID,
+		asset.Name,
+		asset.Type,
+		asset.Status,
+	).Scan(&asset.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &asset, nil
+}
+
+func (r *AssetRepository) GetByID(id string) (*domain.Asset, error) {
+	var a domain.Asset
+	err := r.db.QueryRow(
+		"SELECT id,name,type,status,created_at FROM assets WHERE id=$1",
+		id,
+	).Scan(&a.ID, &a.Name, &a.Type, &a.Status, &a.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &a, nil
+}
+
+func (r *AssetRepository) DeleteByID(id string) (bool, error) {
+	res, err := r.db.Exec("DELETE FROM assets WHERE id=$1", id)
+	if err != nil {
+		return false, err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return n > 0, nil
+}
+
 // Bài 1
 func (r *AssetRepository) GetStats() (*domain.Stats, error) {
 
@@ -170,6 +216,7 @@ func (r *AssetRepository) List(page, limit int, t, status string) ([]domain.Asse
 		i++
 	}
 
+	query += " ORDER BY created_at DESC"
 	query += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
 
 	rows, err := r.db.Query(query, args...)
