@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: homeworks/submissions/assets-api/backend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: backend/go.mod
+          go-version-file: homeworks/submissions/assets-api/backend/go.mod
 
       - name: Download deps
         run: go mod download
@@ -38,12 +38,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: homeworks/submissions/assets-api/backend/go.mod
 
       - name: Run gosec
         uses: securego/gosec@master
         with:
-          args: ./...
+          args: ./homeworks/submissions/assets-api/backend/...
 
   gitleaks:
     name: Gitleaks
@@ -68,6 +68,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs
+          scan-ref: homeworks/submissions/assets-api
           ignore-unfixed: true
           severity: CRITICAL,HIGH
           format: table
