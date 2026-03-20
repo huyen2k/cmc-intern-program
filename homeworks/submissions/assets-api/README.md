@@ -1,6 +1,7 @@
 ﻿# EASM Asset Management Platform
 
 This repository contains a full-stack Day 3 submission:
+
 - Backend API (Go): `backend/`
 - Frontend Dashboard (React + Vite): `frontend/`
 
@@ -8,32 +9,27 @@ This repository contains a full-stack Day 3 submission:
 
 ```text
 assets-api/
-├── backend/
-│   ├── cmd/server/
-│   ├── internal/
-│   ├── migrations/
-│   ├── tests/
-│   │   ├── domain/
-│   │   ├── handler/
-│   │   ├── service/
-│   │   └── scanner/
-│   ├── go.mod
-│   └── README.md
-├── frontend/
-│   ├── src/
-│   ├── package.json
-│   └── README.md
-└── docker-compose.yml
+|-- backend/
+|   |-- cmd/server/
+|   |-- internal/
+|   |-- migrations/
+|   |-- go.mod
+|   `-- README.md
+|-- frontend/
+|   |-- src/
+|   |-- package.json
+|   `-- README.md
+`-- docker-compose.yml
 ```
 
 ## Day 3 Status
 
-- Bai 1: Expand Scan API - Done
-- Bai 2: Unit Tests - Done
-- Bai 3: Frontend Integration - Done
-- Bai 4: CI/CD - Done
-- Bai 5: Docker Compose Deployment - Done
-- Bai 6-9 (Bonus): Not implemented yet
+- Task 1: Expand Scan API - Done
+- Task 2: Unit Tests - Done
+- Task 3: Frontend Integration - Done
+- Task 4: CI/CD - Done
+- Task 5: Docker Compose Deployment - Done
+- Task 6-9 (Bonus): Not implemented yet
 
 ## Run Tests
 
@@ -51,7 +47,7 @@ cd backend
 go test -cover ./...
 ```
 
-Run test groups in the separated test folder:
+Run specific package tests:
 
 ```bash
 cd backend
@@ -92,4 +88,3 @@ docker-compose up --build
 
 - Backend details: `backend/README.md`
 - Frontend details: `frontend/README.md`
-

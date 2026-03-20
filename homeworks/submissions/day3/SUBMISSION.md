@@ -16,7 +16,9 @@
 
 ## Link Repository
 
-[Điền link GitHub repository]
+- https://github.com/huyen2k/cmc-intern-program
+- Branch: `homework`
+- ./homeworks/submissions/assets-api
 
 ## Link Demo (nếu có)
 
