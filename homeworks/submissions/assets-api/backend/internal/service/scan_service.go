@@ -101,7 +101,6 @@ func (s *ScanService) runScan(job *domain.ScanJob, asset *domain.Asset) {
 		errText = err.Error()
 	}
 
-	_ = now
 	_ = s.scanRepo.SetJobStatus(job.ID, status, errText, len(results), &ended)
 	log.Printf("scan job %s completed with %d results", job.ID, len(results))
 }
