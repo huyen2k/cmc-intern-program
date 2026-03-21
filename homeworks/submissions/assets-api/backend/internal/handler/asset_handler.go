@@ -208,6 +208,7 @@ func (h *AssetHandler) BatchCreate(w http.ResponseWriter, r *http.Request) {
 		"ids":     ids,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
@@ -234,6 +235,7 @@ func (h *AssetHandler) BatchDelete(w http.ResponseWriter, r *http.Request) {
 		"not_found": notFound,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 

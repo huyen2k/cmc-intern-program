@@ -29,10 +29,10 @@ func NewScanService(assetService *AssetService, scanRepo *repository.ScanReposit
 			domain.ScanTypeSubdomain: scanner.NewSubdomainScanner(),
 			domain.ScanTypeCertTrans: scanner.NewCertTransScanner(),
 			domain.ScanTypeASN:       scanner.NewASNScanner(),
-			domain.ScanTypeIP:   scanner.NewIPScanner(),
-			domain.ScanTypePort: scanner.NewPortScanner(),
-			domain.ScanTypeSSL:  scanner.NewSSLScanner(),
-			domain.ScanTypeTech: scanner.NewTechScanner(),
+			domain.ScanTypeIP:        scanner.NewIPScanner(),
+			domain.ScanTypePort:      scanner.NewPortScanner(),
+			domain.ScanTypeSSL:       scanner.NewSSLScanner(),
+			domain.ScanTypeTech:      scanner.NewTechScanner(),
 		},
 	}
 }
@@ -63,8 +63,7 @@ func (s *ScanService) StartScan(assetID, scanType string) (*domain.ScanJob, erro
 func (s *ScanService) runScan(job *domain.ScanJob, asset *domain.Asset) {
 	log.Printf("scan job %s started: asset=%s type=%s", job.ID, job.AssetID, job.ScanType)
 
-	now := time.Now().UTC()
-	_ = s.scanRepo.SetJobStatus(job.ID, domain.ScanStatusRunning, "", 0, nil)
+	s.scanRepo.SetJobStatus(job.ID, domain.ScanStatusRunning, "", 0, nil)
 
 	results := []any{}
 	var err error

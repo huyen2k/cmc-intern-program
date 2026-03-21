@@ -127,8 +127,7 @@ CACH CHAY DU AN
 - Tu folder homeworks/submissions/assets-api:
   docker-compose up --build
 - Truy cap:
-  Frontend: http://localhost:3000
-  Backend:  http://localhost:8080
+  Full Stack App: http://localhost:8080
 
 2) Chay backend local
 - Tu folder homeworks/submissions/assets-api/backend:
