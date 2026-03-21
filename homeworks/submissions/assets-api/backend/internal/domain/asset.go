@@ -41,11 +41,26 @@ func (a Asset) Validate() error {
 		return errors.New("invalid asset type")
 	}
 
+	if a.Status != "" && !isValidAssetStatus(a.Status) {
+		return errors.New("invalid asset status: must be 'active' or 'inactive'")
+	}
+
 	return nil
 }
 
+func isValidAssetStatus(status string) bool {
+	switch status {
+	case AssetStatusActive, AssetStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
 const (
-	AssetTypeDomain  = "domain"
-	AssetTypeIP      = "ip"
-	AssetTypeService = "service"
+	AssetTypeDomain    = "domain"
+	AssetTypeIP        = "ip"
+	AssetTypeService   = "service"
+	AssetStatusActive  = "active"
+	AssetStatusInactive = "inactive"
 )

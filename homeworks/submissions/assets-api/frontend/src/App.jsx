@@ -12,19 +12,11 @@ async function api(path, options = {}) {
   const contentType = response.headers.get('content-type') || '';
   let data = null;
 
-  if (text) {
-    if (contentType.includes('application/json')) {
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = null;
-      }
-    } else {
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = null;
-      }
+  if (text && contentType.includes('application/json')) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
     }
   }
 

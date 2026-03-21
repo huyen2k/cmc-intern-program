@@ -6,10 +6,12 @@ import "net/http"
 // cross-origin requests that include sensitive headers such as Authorization.
 // Adjust this list as appropriate for your deployment.
 var allowedOrigins = map[string]struct{}{
-	"http://localhost:8080": {},
+	"http://localhost:8080":  {},
 	"http://127.0.0.1:8080": {},
-	"http://localhost:3000": {},
+	"http://localhost:3000":  {},
 	"http://127.0.0.1:3000": {},
+	"http://localhost:5173":  {},
+	"http://127.0.0.1:5173": {},
 }
 
 func CORSMiddleware(next http.Handler) http.Handler {

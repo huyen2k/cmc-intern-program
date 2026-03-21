@@ -51,6 +51,11 @@ Access:
 cd backend
 cp .env.example .env
 go mod tidy
+
+# Ensure Postgres is running, then apply the initial database schema
+# (DATABASE_URL / DB_DSN should be set in your .env file)
+psql "$DB_DSN" -f migrations/init.sql
+
 go run ./cmd/server
 ```
 

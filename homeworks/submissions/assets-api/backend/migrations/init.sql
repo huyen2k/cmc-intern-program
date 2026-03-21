@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS assets (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('domain', 'ip', 'service')),
-  status TEXT NOT NULL DEFAULT 'active',
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

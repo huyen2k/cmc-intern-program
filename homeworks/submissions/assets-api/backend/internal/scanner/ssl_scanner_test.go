@@ -7,6 +7,9 @@ import (
 )
 
 func TestSSLScanner_Scan(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping network-dependent SSL test in short mode")
+	}
 	s := scanner.NewSSLScanner()
 	_, err := s.Scan("google.com")
 	if err != nil {
