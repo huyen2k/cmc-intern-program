@@ -42,35 +42,42 @@ func (s *PortScanner) Scan(target string) ([]any, error) {
 
 	var mu sync.Mutex
 	wg := sync.WaitGroup{}
-	sem := make(chan struct{}, 100)
 
-	for _, p := range s.ports {
+	portCh := make(chan int)
+	go func() {
+		for _, p := range s.ports {
+			portCh <- p
+		}
+		close(portCh)
+	}()
+
+	const workers = 100
+	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go func(port int) {
+		go func() {
 			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
+			for port := range portCh {
+				addr := fmt.Sprintf("%s:%d", target, port)
+				conn, err := net.DialTimeout("tcp", addr, 300*time.Millisecond)
+				if err != nil {
+					mu.Lock()
+					closed++
+					mu.Unlock()
+					continue
+				}
+				_ = conn.Close()
 
-			addr := fmt.Sprintf("%s:%d", target, port)
-			conn, err := net.DialTimeout("tcp", addr, 300*time.Millisecond)
-			if err != nil {
 				mu.Lock()
-				closed++
+				openPorts = append(openPorts, openPort{
+					port:     port,
+					protocol: "tcp",
+					state:    "open",
+					service:  guessService(port),
+					version:  "",
+				})
 				mu.Unlock()
-				return
 			}
-			_ = conn.Close()
-
-			mu.Lock()
-			openPorts = append(openPorts, openPort{
-				port:     port,
-				protocol: "tcp",
-				state:    "open",
-				service:  guessService(port),
-				version:  "",
-			})
-			mu.Unlock()
-		}(p)
+		}()
 	}
 
 	wg.Wait()

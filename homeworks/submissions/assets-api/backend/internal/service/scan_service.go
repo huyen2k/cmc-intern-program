@@ -63,7 +63,9 @@ func (s *ScanService) StartScan(assetID, scanType string) (*domain.ScanJob, erro
 func (s *ScanService) runScan(job *domain.ScanJob, asset *domain.Asset) {
 	log.Printf("scan job %s started: asset=%s type=%s", job.ID, job.AssetID, job.ScanType)
 
-	s.scanRepo.SetJobStatus(job.ID, domain.ScanStatusRunning, "", 0, nil)
+	if err := s.scanRepo.SetJobStatus(job.ID, domain.ScanStatusRunning, "", 0, nil); err != nil {
+		log.Printf("scan job %s: failed to set status to running: %v", job.ID, err)
+	}
 
 	results := []any{}
 	var err error
@@ -101,7 +103,9 @@ func (s *ScanService) runScan(job *domain.ScanJob, asset *domain.Asset) {
 		errText = err.Error()
 	}
 
-	_ = s.scanRepo.SetJobStatus(job.ID, status, errText, len(results), &ended)
+	if err := s.scanRepo.SetJobStatus(job.ID, status, errText, len(results), &ended); err != nil {
+		log.Printf("scan job %s: failed to set final status %s: %v", job.ID, status, err)
+	}
 	log.Printf("scan job %s completed with %d results", job.ID, len(results))
 }
 

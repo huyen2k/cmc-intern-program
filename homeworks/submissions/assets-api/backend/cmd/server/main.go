@@ -87,15 +87,14 @@ func main() {
 	mux.HandleFunc("/assets/count", assetHandler.Count)
 
 	mux.HandleFunc("/assets/batch", func(w http.ResponseWriter, r *http.Request) {
-
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			assetHandler.BatchCreate(w, r)
-			return
-		}
-
-		if r.Method == http.MethodDelete {
+		case http.MethodDelete:
 			assetHandler.BatchDelete(w, r)
-			return
+		default:
+			w.Header().Set("Allow", "POST, DELETE")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
@@ -207,5 +206,7 @@ func main() {
 
 	log.Println("Server running on :" + cfg.PORT)
 
-	http.ListenAndServe(":"+cfg.PORT, handler.CORSMiddleware(mux))
+	if err := http.ListenAndServe(":"+cfg.PORT, handler.CORSMiddleware(mux)); err != nil {
+		log.Fatal(err)
+	}
 }
