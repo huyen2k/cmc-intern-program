@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, homework]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: homeworks/submissions/assets-api/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: homeworks/submissions/assets-api/backend/go.mod
+
+      - name: Download deps
+        run: go mod download
+
+      - name: Run tests
+        run: go test -cover ./...
+
+  gosec:
+    name: Gosec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: homeworks/submissions/assets-api/backend/go.mod
+
+      - name: Run gosec
+        uses: securego/gosec@master
+        with:
+          args: ./homeworks/submissions/assets-api/backend/...
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  trivy:
+    name: Trivy FS Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: homeworks/submissions/assets-api
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          format: table

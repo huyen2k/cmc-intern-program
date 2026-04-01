@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Assets API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /assets:
+    post:
+      summary: Create asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [domain, ip, service]
+      responses:
+        "201":
+          description: Created
+    get:
+      summary: List assets
+      responses:
+        "200":
+          description: OK
+  /assets/{id}/scan:
+    post:
+      summary: Start scan job
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scan_type:
+                  type: string
+                  enum:
+                    [
+                      dns,
+                      whois,
+                      subdomain,
+                      cert_trans,
+                      asn,
+                      all,
+                      ip,
+                      port,
+                      ssl,
+                      tech,
+                    ]
+      responses:
+        "202":
+          description: Accepted
+  /scan-jobs/{id}:
+    get:
+      summary: Get scan job status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /scan-jobs/{id}/results:
+    get:
+      summary: Get scan results by job id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /assets/{id}/scans:
+    get:
+      summary: List all scan jobs for an asset
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /assets/{id}/results:
+    get:
+      summary: List all scan results for an asset
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
