@@ -1,0 +1,206 @@
+name: Homework - Assets API CI/CD
+
+on:
+  pull_request:
+    branches:
+      - homework
+    paths:
+      - "homeworks/submissions/assets-api/**"
+      - ".github/workflows/homework-assets-api.yml"
+  push:
+    branches:
+      - homework
+    paths:
+      - "homeworks/submissions/assets-api/**"
+      - ".github/workflows/homework-assets-api.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: homeworks/submissions/assets-api
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: assets_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_DSN: postgresql://postgres:postgres@localhost:5432/assets_db?sslmode=disable
+      PORT: 8080
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: homeworks/submissions/assets-api/go.sum
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build
+        run: go build -v -o server ./cmd/server
+
+      - name: Create database schema
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d assets_db -c "
+            CREATE TABLE IF NOT EXISTS assets (
+              id VARCHAR(36) PRIMARY KEY,
+              name TEXT NOT NULL,
+              type VARCHAR(50) NOT NULL,
+              status VARCHAR(50) NOT NULL DEFAULT 'active',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          "
+
+      - name: Run tests with coverage
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./homeworks/submissions/assets-api/coverage.out
+          flags: assets-api
+        continue-on-error: true
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    defaults:
+      run:
+        working-directory: homeworks/submissions/assets-api
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: assets_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: homeworks/submissions/assets-api/go.sum
+
+      - name: Build server binary
+        run: go build -v -o server ./cmd/server
+
+      - name: Create database schema
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d assets_db -c "
+            CREATE TABLE IF NOT EXISTS assets (
+              id VARCHAR(36) PRIMARY KEY,
+              name TEXT NOT NULL,
+              type VARCHAR(50) NOT NULL,
+              status VARCHAR(50) NOT NULL DEFAULT 'active',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          "
+
+      - name: Start server
+        run: |
+          DB_DSN="postgresql://postgres:postgres@localhost:5432/assets_db?sslmode=disable" PORT=8080 ./server &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+      - name: Wait for server to be ready
+        run: |
+          timeout 30 bash -c 'until curl -sf http://localhost:8080/health; do sleep 1; done'
+
+      - name: Test health endpoint
+        run: |
+          response=$(curl -s http://localhost:8080/health)
+          echo "Health response: $response"
+          if echo "$response" | grep -qi '"status"'; then
+            echo "✅ Health endpoint OK"
+          else
+            echo "❌ Health endpoint failed"
+            exit 1
+          fi
+
+      - name: Test list assets endpoint
+        run: |
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/assets)
+          echo "List assets status: $status_code"
+          if [ "$status_code" -eq 200 ]; then
+            echo "✅ List assets endpoint OK"
+          else
+            echo "❌ List assets endpoint failed with status: $status_code"
+            exit 1
+          fi
+
+      - name: Test batch create assets endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8080/assets/batch \
+            -H "Content-Type: application/json" \
+            -d '{"assets":[{"name":"example.com","type":"domain","status":"active"}]}')
+          status_code=$(echo "$response" | tail -n1)
+          echo "Batch create status: $status_code"
+          if [ "$status_code" -eq 201 ]; then
+            echo "✅ Batch create endpoint OK"
+          else
+            echo "❌ Batch create endpoint failed with status: $status_code"
+            exit 1
+          fi
+
+      - name: Test stats endpoint
+        run: |
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/assets/stats)
+          echo "Stats status: $status_code"
+          if [ "$status_code" -eq 200 ]; then
+            echo "✅ Stats endpoint OK"
+          else
+            echo "❌ Stats endpoint failed with status: $status_code"
+            exit 1
+          fi
+
+      - name: Test count endpoint
+        run: |
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/assets/count)
+          echo "Count status: $status_code"
+          if [ "$status_code" -eq 200 ]; then
+            echo "✅ Count endpoint OK"
+          else
+            echo "❌ Count endpoint failed with status: $status_code"
+            exit 1
+          fi
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            kill "$SERVER_PID" || true
+          fi
